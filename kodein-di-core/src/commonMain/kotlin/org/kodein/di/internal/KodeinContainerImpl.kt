@@ -148,6 +148,9 @@ internal class KodeinContainerImpl private constructor(
             val (_, definition, translator) = result[0]
             node?.check(key, overrideLevel)
             val kContext = translator?.toKContext(context) ?: KodeinContext(key.contextType, context) as KodeinContext<Any>
+
+            println("factory-size1: def:$definition trans:${translator?.smallString()} context:${kContext.value} allTranslators:${tree.registeredTranslators.joinToString(",") { it.smallString() }}")
+
             key as Kodein.Key<Any, A, T>
             val bindingKodein = bindingKodein(key, kContext, definition.tree, overrideLevel)
             return definition.binding.getFactory(bindingKodein, key)
@@ -196,3 +199,5 @@ internal class KodeinContainerImpl private constructor(
     }
 
 }
+
+fun <C, X> ContextTranslator<C, X>.smallString() = "${contextType.simpleDispString()}->${scopeType.simpleDispString()}"

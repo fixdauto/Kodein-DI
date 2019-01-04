@@ -1,6 +1,7 @@
 package kodein.di.demo.coffee
 
 import kodein.di.demo.Logger
+import org.kodein.di.bindings.ScopeCloseable
 
 interface Ration {
     fun name(): String
@@ -21,7 +22,7 @@ class Kettle<T : Ration>(
         private val heater: Heater,
         private val pump: Pump,
         private val ration: () -> T // We will need a new ration every time
-) {
+) : ScopeCloseable {
 
     init {
         log.log("<Creating CoffeeMaker>")
@@ -33,5 +34,9 @@ class Kettle<T : Ration>(
         val ration = ration()
         log.log("[_]P ${ration.name()} ${System.identityHashCode(ration)} [_]P")
         heater.off()
+    }
+
+    override fun close() {
+        log.log("closing kettle")
     }
 }

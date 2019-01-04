@@ -119,15 +119,37 @@ internal class KodeinTreeImpl(
     override fun <C, A, T : Any> find(key: Kodein.Key<C, A, T>, overrideLevel: Int, all: Boolean): List<Triple<Kodein.Key<Any, A, T>, KodeinDefinition<Any, A, T>, ContextTranslator<C, Any>?>> {
 
         if (!all) {
+
+            if (key.type.simpleDispString() == "Kettle<Coffee>") {
+                println("find: $key inCache?: ${_cache.containsKey(key)} isAnyContextType?: ${key.contextType == AnyToken} applicableTranslators: ${
+                    translators.filter { it.contextType == key.contextType } + translators.filter { it.contextType == AnyToken }.joinToString(",") { it.smallString() }
+                }")
+            }
+
+//            if (key.type.simpleDispString() != "Kettle<Coffee>" || ) {
             _cache[key]?.let { (realKey, list, translator) ->
+
+                if (key.type.simpleDispString() == "Kettle<Coffee>") {
+                    println("match by key $key")
+                    if(key.contextType.simpleDispString() == "MainFragment") {
+                        println("translator present? $translator")
+                    }
+                }
+
                 val definition = list.getOrNull(overrideLevel) ?: return emptyList()
                 return listOf(Triple(realKey as Kodein.Key<Any, A, T>, definition as KodeinDefinition<Any, A, T>, translator as ContextTranslator<C, Any>?))
             }
+//            }
 
             if (key.contextType != AnyToken) {
                 val anyContextKey = key.copy(contextType = AnyToken)
                 _cache[anyContextKey]?.let { triple ->
                     val (realKey, list, translator) = triple
+
+                    if (key.type.simpleDispString() == "Kettle<Coffee>") {
+                        println("match by anyContextKey $anyContextKey")
+                    }
+
                     if ((translator != null && translator.contextType != key.contextType) || (translator == null && realKey.contextType != key.contextType ))
                         return@let
                     _cache[key] = triple
@@ -140,6 +162,11 @@ internal class KodeinTreeImpl(
             for (translator in applicableTranslators) {
                 val translatedKey = Kodein.Key(translator.scopeType, key.argType, key.type, key.tag)
                 _cache[translatedKey]?.takeIf { it.third == null }?.let { triple ->
+
+                    if (key.type.simpleDispString() == "Kettle<Coffee>") {
+                        println("match by translatorKey $translatedKey")
+                    }
+
                     if (triple.third != null)
                         return@let
                     _cache[key] = triple.copy(third = translator)
@@ -151,9 +178,17 @@ internal class KodeinTreeImpl(
         }
 
         val result = findBySpecs(SearchSpecs(key.contextType, key.argType, key.type, key.tag))
+
+        if (key.type.simpleDispString() == "Kettle<Coffee>") {
+            println("findBySpecs ${result.joinToString(", ") { "${it.first}:${it.second?.smallString()}" }}")
+        }
+
         if (result.size == 1) {
-            val (realKey, _) = result.first()
-            _cache[key] = _cache[realKey] ?: throw notInMap(realKey, key)
+            // HERE it is!!!
+//            val (realKey, _) = result.first()
+//            _cache[key] = _cache[realKey] ?: throw notInMap(realKey, key)
+            val (realKey, translator) = result.first()
+            _cache[key] = _cache[realKey]?.copy(third = translator) ?: throw notInMap(realKey, key)
         }
 
         return result.mapNotNull { (realKey, translator) ->

@@ -1,5 +1,7 @@
 package kodein.di.demo
 
+import android.util.Log
+
 class Logger {
 
     var text: String = ""
@@ -8,6 +10,7 @@ class Logger {
     var callback: (() -> Unit)? = null
 
     fun log(msg: String) {
+        Log.d("Logger", msg)
         text += "$msg\n"
         callback?.invoke()
     }

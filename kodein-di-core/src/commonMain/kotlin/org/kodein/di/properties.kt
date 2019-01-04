@@ -39,7 +39,9 @@ class KodeinProperty<out V>(internal val trigger: KodeinTrigger?, val originalCo
     override fun provideDelegate(receiver: Any?, prop: KProperty<Any?>): Lazy<V> = lazy {
         @Suppress("UNCHECKED_CAST")
         val context = if (receiver != null && originalContext === AnyKodeinContext) KodeinContext(TTOf(receiver) as TypeToken<in Any>, receiver) else originalContext
-        get(context, true) } .also { trigger?.properties?.add(it)
+        get(context, true)
+    } .also {
+        trigger?.properties?.add(it)
     }
 
 }

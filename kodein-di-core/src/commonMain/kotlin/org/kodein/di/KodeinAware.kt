@@ -154,7 +154,11 @@ fun <A, T : Any> KodeinAware.ProviderOrNull(argType: TypeToken<in A>, type: Type
  * @throws Kodein.DependencyLoopException If the value construction triggered a dependency loop.
  */
 fun <T : Any> KodeinAware.Instance(type: TypeToken<out T>, tag: Any? = null): KodeinProperty<T> =
-        KodeinProperty(kodeinTrigger, kodeinContext) { ctx, _ -> kodein.container.provider(Kodein.Key(ctx.anyType, UnitToken, type, tag), ctx.value).invoke() }
+        KodeinProperty(kodeinTrigger, kodeinContext) { ctx, _ ->
+            val key = Kodein.Key(ctx.anyType, UnitToken, type, tag)
+            println("get1 -- type:${type.simpleDispString()} context:${ctx.value} key:$key container: ${kodein.container.hashCode()}")
+            kodein.container.provider(key, ctx.value).invoke()
+        }
 
 /**
  * Gets an instance of [T] for the given type and tag, curried from a factory that takes an argument [A].
@@ -170,7 +174,11 @@ fun <T : Any> KodeinAware.Instance(type: TypeToken<out T>, tag: Any? = null): Ko
  * @throws Kodein.DependencyLoopException If the value construction triggered a dependency loop.
  */
 fun <A, T : Any> KodeinAware.Instance(argType: TypeToken<in A>, type: TypeToken<T>, tag: Any? = null, arg: () -> A): KodeinProperty<T> =
-        KodeinProperty(kodeinTrigger, kodeinContext) { ctx, _ -> kodein.container.factory(Kodein.Key(ctx.anyType, argType, type, tag), ctx.value).invoke(arg()) }
+        KodeinProperty(kodeinTrigger, kodeinContext) { ctx, _ ->
+            val key = Kodein.Key(ctx.anyType, argType, type, tag)
+            println("get2 -- type:${type.simpleDispString()} context:${ctx.value} key:$key arg:${arg()} container: ${kodein.container.hashCode()}")
+            kodein.container.factory(key, ctx.value).invoke(arg())
+        }
 
 /**
  * Gets an instance of [T] for the given type and tag, or null if none is found.

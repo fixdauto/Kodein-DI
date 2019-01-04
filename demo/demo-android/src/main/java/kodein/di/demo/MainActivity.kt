@@ -17,24 +17,37 @@ class MainActivity : AppCompatActivity(), KodeinAware {
 
     override val kodeinContext: KodeinContext<*> = kcontext(this)
 
-    private val _parentKodein by closestKodein()
+//    private val _parentKodein by closestKodein()
+//
+//    override val kodein: Kodein by retainedKodein {
+//        extend(_parentKodein, copy = Copy.All)
+//        import(thermosiphonModule)
+//    }
 
-    override val kodein: Kodein by retainedKodein {
-        extend(_parentKodein, copy = Copy.All)
-        import(thermosiphonModule)
-    }
+    override val kodein by closestKodein()
+
+//    val kodein by lazy { (application as DemoApplication).kodein }
 
     // will be the same instance as the coffeeMaker in MainFragment
-    val coffeeMaker: Kettle<Coffee> by instance()
-    val log: Logger by instance()
+    val coffeeMaker: Kettle<Coffee> by activityCoffeeMakerInstance()
+//    val log: Logger by instance()
+
+    fun activityCoffeeMakerInstance(): KodeinProperty<Kettle<Coffee>> {
+        return instance<Kettle<Coffee>>()
+    }
+
+//    inline fun <reified T: Any> instance(): KodeinProperty<T> = kodein.instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
 
+        println("ACT: ${hashCode()} - ${kodein.hashCode()}")
+        println("ACT CoffeeMaker: ${coffeeMaker.hashCode()}")
+
         if(savedInstanceState == null) {
-            log.log("Going to brew coffee using $coffeeMaker")
+//            log.log("Going to brew coffee using $coffeeMaker")
 
             supportFragmentManager.beginTransaction().add(R.id.fragment, MainFragment()).commit()
         }

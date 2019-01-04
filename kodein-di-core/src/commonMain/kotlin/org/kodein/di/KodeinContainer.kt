@@ -73,8 +73,10 @@ interface KodeinContainer {
      * @throws Kodein.NotFoundException If no provider was found.
      * @throws Kodein.DependencyLoopException When calling the provider function, if the instance construction triggered a dependency loop.
      */
-    fun <C, T: Any> provider(key: Kodein.Key<C, Unit, T>, context: C, overrideLevel: Int = 0): () -> T =
-            factory(key, context).toProvider { Unit }
+    fun <C, T: Any> provider(key: Kodein.Key<C, Unit, T>, context: C, overrideLevel: Int = 0): () -> T {
+        println("CALL: $key")
+        return factory(key, context).toProvider { Unit }
+    }
 
     /**
      * Retrieve a provider for the given key, or null if none is found.
